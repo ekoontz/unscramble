@@ -529,7 +529,7 @@
 
 (defn start-screen [on-update]
   [overlay
-   [:div "UNSCRAMBLE"]
+   [:div "UNSCRAMBLE!!!"]
    [css {:height 20}]
    [button {:on-click #(on-update {:type :player-restart})} "START PLAYING.."]
    [css {:height 20}]
