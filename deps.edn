@@ -1,0 +1,12 @@
+{:paths ["src" "resources"]
+ :deps
+ {org.clojure/clojurescript {:mvn/version "1.9.946"}
+  figwheel-sidecar {:mvn/version "0.5.15"}
+  hiccup {:mvn/version "1.0.5"}
+  reagent {:mvn/version "0.8.0"}}
+ :aliases
+ {:app {:main-opts  ["-m" "unscramble.build"]}
+  :server {:main-opts  ["-m" "unscramble.build" "server"]
+           :extra-deps
+           {cljfmt {:mvn/version "0.5.7"}
+            com.cemerick/piggieback {:mvn/version "0.2.2"}}}}}
