@@ -64,12 +64,19 @@
 
 (declare sentence-word)
 
-(defn sentence-words []
-  [:div
+(defn scrambled-words []
+  [:div#scrambled
    (doall
      (map (fn [index]
              (sentence-word index))
           (shuffle (range (count (tokenize @sentence))))))])
+
+(defn unscrambled-words []
+  [:div#scrambled
+   (doall
+     (map (fn [index]
+             (sentence-word index))
+          (range (count (tokenize @sentence)))))])
 
 (defn sentence-word [index]
   [:div.word {:draggable true
@@ -82,7 +89,8 @@
   [:div
    [greeting "Sentence Scramble!"]
    [sentence-input]
-   [sentence-words]
+   [unscrambled-words]
+   [scrambled-words]
    [clock]])
 
 (defn clock []
