@@ -1,0 +1,55 @@
+
+div, h1, input {
+    font-family: HelveticaNeue, Helvetica;
+    color: #777;
+}
+
+.example-clock {
+    font-size: 24px;
+    font-weight: bold;
+    float:right;
+    text-align:right;
+    width:auto;
+    border:0px dashed blue;
+    line-height: 1.2em;
+    font-family: HelveticaNeue-UltraLight, Helvetica;
+}
+
+@media (max-width: 768px) {
+    .example-clock {
+        font-size: 64px;
+    }
+}
+
+.example-clock {
+    width:100%;
+    color: #112;
+    float:right;
+}
+
+.color-input, .color-input input {
+    font-size: 14px;
+    line-height: 1.5em;
+}
+
+div.word {
+    font-size:24px;
+    float:left;
+    width:auto;
+    padding:0.25em;
+    padding-left:0.5em;
+    padding-right:0.5em;
+    margin:0.5em;
+    background:#FFEFD5;
+    border:3px solid #BDB76B;
+    font-weight:bold;
+    -moz-border-radius:15px;
+    -webkit-border-radius:15px;
+    border-radius:15px;
+}
+
+
+.sentence-input, .sentence-input input {
+     font-size:24px;
+    line-height: 1.5em;
+ }

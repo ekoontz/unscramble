@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Sentence Scramble!</title>
+    <link rel="stylesheet" href="example.css">
+  </head>
+  <body>
+    <script>
+    function dragstart_handler(ev) {
+      console.log("dragStart");
+      // Add the target element's id to the data transfer object
+      ev.dataTransfer.setData("text/plain", ev.target.id);
+    }
+    </script>
+
+    <div id="p1" draggable="true" ondragstart="dragstart_handler(event);">This element is draggable.</div>
+
+    <div id="app">
+      <h1>Loading application..</h1>
+    </div>
+    <script src="target/client.js"></script>
+    <script>
+      scramble.core.run();
+    </script>
+  </body>
+</html>
