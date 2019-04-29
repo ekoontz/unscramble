@@ -64,7 +64,7 @@
           (shuffle (range (count (tokenize @sentence))))))])
 
 (defn unscrambled-words []
-  [:div#scrambled
+  [:div#unscrambled
    (doall
      (map (fn [index]
              (sentence-word index))
