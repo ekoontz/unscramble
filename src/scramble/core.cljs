@@ -54,7 +54,7 @@
                          (reset! tokens (tokenize @sentence)))}]])
 
 (declare scrambled-word)
-(declare sentence-word)
+(declare unscrambled-word)
 
 (defn scrambled-words []
   [:div#scrambled
@@ -63,12 +63,27 @@
              (scrambled-word index))
           (shuffle (range (count (tokenize @sentence))))))])
 
+(defn scrambled-word [index]
+  [:div {:draggable true
+         :class "word scrambled"
+         :on-mouse-down on-mouse-down
+         :id (str "word-" index)
+         :key (str "word-" index)}
+   (nth @tokens index)])
+
 (defn unscrambled-words []
   [:div#unscrambled
    (doall
      (map (fn [index]
-             (sentence-word index))
+             (unscrambled-word index))
           (range (count (tokenize @sentence)))))])
+
+(defn unscrambled-word [index]
+  [:div {:draggable true
+         :class "word in-order"
+         :id (str "sentence-word-" index)
+         :key (str "sentence-word-" index)}
+   (nth @tokens index)])
 
 (defn blank-words []
   (let [percent (/ 100.0 (* 1.25 (count (tokenize @sentence))))]
@@ -82,21 +97,6 @@
                      :key (str "sentence-blank-" index)}
                 " "])
             (range (count (tokenize @sentence)))))]))
-
-(defn scrambled-word [index]
-  [:div {:draggable true
-         :class "word scrambled"
-         :on-mouse-down on-mouse-down
-         :id (str "word-" index)
-         :key (str "word-" index)}
-   (nth @tokens index)])
-
-(defn sentence-word [index]
-  [:div {:draggable true
-         :class "word in-order"
-         :id (str "sentence-word-" index)
-         :key (str "sentence-word-" index)}
-   (nth @tokens index)])
 
 (defn scramble-layout []
   [:div
