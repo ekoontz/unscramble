@@ -10,15 +10,15 @@
 
 (defonce sentence (r/atom "Io ho dato il libro interessante a Paola."))
 
-(defonce dragme-contents (shuffle (tokenize @sentence)))
+(defonce dragme-contents (r/atom (shuffle (tokenize @sentence))))
 
 (defonce dragme-styles
-  (vec
-   (map (fn [index]
-          (r/atom {"left" (str (* index 200) "px")
-                   "top" "0"}))
-        (range 0 (count dragme-contents)))))
-
+  (r/atom
+   (vec
+     (map (fn [index]
+            (r/atom {"left" (str (* index 115) "px")
+                     "top" "0"}))
+          (range 0 (count @dragme-contents))))))
 
 ;; the sentence tokens in order.
 (defonce tokens (r/atom (tokenize @sentence)))
@@ -60,8 +60,14 @@
             :value @sentence
             :on-change (fn [element]
                          (reset! sentence (-> element .-target .-value))
-                         (reset! tokens (tokenize @sentence)))}]])
-
+                         (reset! tokens (tokenize @sentence))
+                         (reset! dragme-contents (shuffle (tokenize @sentence)))
+                         (reset! dragme-styles
+                                 (vec
+                                   (map (fn [index]
+                                           (r/atom {"left" (str (* index 115) "px")
+                                                    "top" "0"}))
+                                        (range 0 (count @dragme-contents))))))}]])
 (declare scrambled-word)
 (declare unscrambled-word)
 
@@ -110,7 +116,7 @@
 (def y-offset 0)
 (defn update-dragme [index opacity x-position y-position]
   (let [y-position (+ y-position y-offset)])
-  (reset! (nth dragme-styles index)
+  (reset! (nth @dragme-styles index)
           {"opacity" opacity
            "left" (str x-position "px")
            "top" (str y-position "px")}))
@@ -135,10 +141,10 @@
    (doall
     (map (fn [index]
            [:div.dragme {:key (str "dragme-" index)
-                         :style @(nth dragme-styles index)
+                         :style @(nth @dragme-styles index)
                          :on-mouse-down (dragme-on-down index)}
-            (nth dragme-contents index)])
-         (range 0 (count dragme-contents))))
+            (nth @dragme-contents index)])
+         (range 0 (count @dragme-contents))))
 
    [:div {:class "row blanks"}
     [blank-words]]
