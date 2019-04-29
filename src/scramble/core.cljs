@@ -10,9 +10,9 @@
 
 
 (defonce sentence (r/atom "Io ho dato il libro interessante a Paola."))
+
+;; the sentence tokens in order.
 (defonce tokens (r/atom (tokenize @sentence)))
-(defn set-tokens [sentence]
-  (reset! tokens (tokenize sentence)))
 
 (defn greeting [message]
   [:h1 message])
@@ -51,7 +51,7 @@
             :value @sentence
             :on-change (fn [element]
                          (reset! sentence (-> element .-target .-value))
-                         (set-tokens @sentence))}]])
+                         (reset! tokens (tokenize @sentence)))}]])
 
 (declare scrambled-word)
 (declare sentence-word)
