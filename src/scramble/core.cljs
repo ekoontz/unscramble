@@ -8,11 +8,14 @@
 (defn tokenize [sentence]
   (clojure.string/split sentence #"[ ]+"))
 
-(def original-dragme "hello")
-(defonce dragme-content (r/atom original-dragme))
+(def original-dragme-text "hello")
+(defonce dragme-content (r/atom original-dragme-text))
+
+;;(defonce dragme-style (r/atom {"left" ()}))
+
 
 (defonce dragme
-  (r/atom [:div#dragme {:style {"float" "left"}} @dragme-content]))
+  (r/atom [:div#dragme {:style {}} @dragme-content]))
 
 (defonce sentence (r/atom "Io ho dato il libro interessante a Paola."))
 
@@ -103,12 +106,15 @@
                 " "])
             (range (count (tokenize @sentence)))))]))
 
-(defn update-dragme [new-text]
+(defn update-dragme [new-text x-position y-position]
   (d/log (str "UPDATING DRAGME..."))
   (reset! dragme-content new-text)
   (let [[element attributes old-text] @dragme]
     (reset! dragme
-            [element attributes
+            [element (merge attributes
+                            {:style (merge (:style attributes)
+                                           {"left" (str x-position "px")
+                                            "top" (str y-position "px")})})
              @dragme-content])
     (d/log (str "DONE UPDATING DRAGME!" @dragme))))
 
@@ -118,7 +124,7 @@
         (do
           (d/log (str "starting to drag the 'dragme': " (-> drag-element .-target .-innerHTML)))
           (fn [evt]
-             (reset! dragme-content (str "dragging to: " (.-clientX evt)))
+             (reset! dragme-content (str "to: " (.-clientX evt) ", " (.-clientY evt)))
              (if false (d/log (str "dragme-on-down is in-progress: " (.-clientX evt) (.-clientY evt))))))
 
         ;; not sure what drag-end-atom is for here.
@@ -127,9 +133,9 @@
         drag-end
         (fn [evt]
           (do
-            (d/log (str "done dragging element!!!:"
+            (d/log (str "done dragging element:"
                         (.-clientX evt) ", " (.-clientY evt)))
-            (update-dragme original-dragme)
+            (update-dragme original-dragme-text (.-clientX evt) (.-clientY evt))
             (events/unlisten js/window EventType.MOUSEMOVE drag-move)
             (events/unlisten js/window EventType.MOUSEUP @drag-end-atom)))]
     (reset! drag-end-atom drag-end)

@@ -91,4 +91,6 @@ div#dragme {
     background:#DC143C;
     border:3px solid #BDB76B;
     color: white;
+    position:relative;
+    float:left;
 }
