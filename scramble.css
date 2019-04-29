@@ -81,7 +81,7 @@ div.blanks {
 div.blank {
     background:#eee;
     margin:0.25em;
-    min-height:2em;
+    min-height:0.25em;
     padding:0.25em;
 }
 

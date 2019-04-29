@@ -12,13 +12,21 @@
 
 (defonce dragme-contents (r/atom (shuffle (tokenize @sentence))))
 
+(defonce debug false)
+
+(defn set-scrambled-styles [tokens & [offset]]
+  (let [offset (or offset 0.0)]
+    (if (not (empty? tokens))
+      (let [token (first tokens)
+            em-per-word (Math/max 3.0 (count token))]
+        (if debug (d/log (str "offset: " offset)))
+        (cons
+         (r/atom {"left" (str offset "em")
+                  "top" "0"})
+         (set-scrambled-styles (rest tokens) (* 0.98 (+ offset em-per-word))))))))
+
 (defonce dragme-styles
-  (r/atom
-   (vec
-     (map (fn [index]
-            (r/atom {"left" (str (* index 115) "px")
-                     "top" "0"}))
-          (range 0 (count @dragme-contents))))))
+  (r/atom (set-scrambled-styles @dragme-contents)))
 
 ;; the sentence tokens in order.
 (defonce tokens (r/atom (tokenize @sentence)))
@@ -57,14 +65,11 @@
             :value @sentence
             :on-change (fn [element]
                          (reset! sentence (-> element .-target .-value))
-                         (reset! tokens (tokenize @sentence))
-                         (reset! dragme-contents (shuffle (tokenize @sentence)))
-                         (reset! dragme-styles
-                                 (vec
-                                   (map (fn [index]
-                                           (r/atom {"left" (str (* index 115) "px")
-                                                    "top" "0"}))
-                                        (range 0 (count @dragme-contents))))))}]])
+                         (let [tokenized (tokenize (clojure.string/trim @sentence))]
+                           (reset! tokens tokenized)
+                           (reset! dragme-contents (shuffle tokenized))
+                           (reset! dragme-styles (set-scrambled-styles @dragme-contents))))}]])
+
 (declare unscrambled-word)
 
 (defn unscrambled-words []
