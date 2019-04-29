@@ -103,10 +103,12 @@
                 " "])
             (range (count (tokenize @sentence)))))]))
 
-(defn update-dragme [new-text x-position y-position]
-  (d/log (str "UPDATING DRAGME TO: " x-position ", " y-position))
+(def y-offset 0)
+(defn update-dragme [opacity x-position y-position]
+  (let [y-position (+ y-position y-offset)])
   (reset! dragme-style
-          {"left" (str x-position "px")
+          {"opacity" opacity
+           "left" (str x-position "px")
            "top" (str y-position "px")}))
 
 (defn dragme-on-down [drag-element]
@@ -115,8 +117,8 @@
         (do
           (d/log (str "starting to drag the 'dragme': " (-> drag-element .-target .-innerHTML)))
           (fn [evt]
-             (update-dragme original-dragme-text (.-clientX evt) (.-clientY evt))
-             (if true (d/log (str "dragme-on-down is in-progress: " (.-clientX evt) (.-clientY evt))))))
+             (update-dragme 0.5 (.-clientX evt) (.-clientY evt))
+             (if false (d/log (str "dragme-on-down is in-progress: " (.-clientX evt) (.-clientY evt))))))
 
         ;; not sure what drag-end-atom is for here.
         drag-end-atom (atom nil)
@@ -126,7 +128,7 @@
           (do
             (d/log (str "done dragging element:"
                         (.-clientX evt) ", " (.-clientY evt)))
-            (update-dragme original-dragme-text (.-clientX evt) (.-clientY evt))
+            (update-dragme 1.0 (.-clientX evt) (.-clientY evt))
             (events/unlisten js/window EventType.MOUSEMOVE drag-move)
             (events/unlisten js/window EventType.MOUSEUP @drag-end-atom)))]
     (reset! drag-end-atom drag-end)
