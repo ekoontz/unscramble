@@ -8,8 +8,11 @@
 (defn tokenize [sentence]
   (clojure.string/split sentence #"[ ]+"))
 
+(def original-dragme "hello")
+(defonce dragme-content (r/atom original-dragme))
 
-(defonce dragme (r/atom "hello"))
+(defonce dragme
+  (r/atom [:div#dragme {:style {"float" "left"}} @dragme-content]))
 
 (defonce sentence (r/atom "Io ho dato il libro interessante a Paola."))
 
@@ -27,7 +30,7 @@
 (defn on-mouse-down [drag-element]
   (let [drag-move
         (do
-          (d/log (str "starting to drag word: " (-> drag-element .-target .-innerHTML)))
+          (d/log (str "starting to drag word:.. " (-> drag-element .-target .-innerHTML)))
           (fn [evt]
             (if false (d/log (str "drag-in-progress: " (.-clientX evt) (.-clientY evt))))))
 
@@ -100,13 +103,23 @@
                 " "])
             (range (count (tokenize @sentence)))))]))
 
+(defn update-dragme [new-text]
+  (d/log (str "UPDATING DRAGME..."))
+  (reset! dragme-content new-text)
+  (let [[element attributes old-text] @dragme]
+    (reset! dragme
+            [element attributes
+             @dragme-content])
+    (d/log (str "DONE UPDATING DRAGME!" @dragme))))
+
 (defn dragme-on-down [drag-element]
   (d/log (str "got here"))
   (let [drag-move
         (do
           (d/log (str "starting to drag the 'dragme': " (-> drag-element .-target .-innerHTML)))
           (fn [evt]
-            (if false (d/log (str "dragme-on-down is in-progress: " (.-clientX evt) (.-clientY evt))))))
+             (reset! dragme-content (str "dragging to: " (.-clientX evt)))
+             (if false (d/log (str "dragme-on-down is in-progress: " (.-clientX evt) (.-clientY evt))))))
 
         ;; not sure what drag-end-atom is for here.
         drag-end-atom (atom nil)
@@ -114,22 +127,23 @@
         drag-end
         (fn [evt]
           (do
-            (d/log (str "done dragging element:"
+            (d/log (str "done dragging element!!!:"
                         (.-clientX evt) ", " (.-clientY evt)))
+            (update-dragme original-dragme)
             (events/unlisten js/window EventType.MOUSEMOVE drag-move)
             (events/unlisten js/window EventType.MOUSEUP @drag-end-atom)))]
     (reset! drag-end-atom drag-end)
     (events/listen js/window EventType.MOUSEMOVE drag-move)
     (events/listen js/window EventType.MOUSEUP drag-end)))
 
+
 (defn show-dragme []
-  [:div {:style {"float" "right"
-                 "width" "100%"
-                 "border" "1px dashed blue"}}
-    [:div#dragme
-     {:draggable true
-      :on-mouse-down dragme-on-down}
-     @dragme]])
+  (reset! dragme
+          (let [[element attributes old-text] @dragme]
+            [element (merge attributes
+                            {:on-mouse-down dragme-on-down})
+                     @dragme-content]))
+  @dragme)
 
 (defn scramble-layout []
   [:div
@@ -152,3 +166,4 @@
 (defn ^:export run []
   (r/render [scramble-layout]
             (js/document.getElementById "app")))
+
