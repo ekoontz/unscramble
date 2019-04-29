@@ -8,17 +8,18 @@
 (defn tokenize [sentence]
   (clojure.string/split sentence #"[ ]+"))
 
-(defonce timer (r/atom (js/Date.)))
+
 (defonce sentence (r/atom "Io ho dato il libro interessante a Paola."))
 (defonce tokens (r/atom (tokenize @sentence)))
-(def time-updater (js/setInterval
-                   #(reset! timer (js/Date.)) 1000))
 (defn set-tokens [sentence]
   (reset! tokens (tokenize sentence)))
 
 (defn greeting [message]
   [:h1 message])
 
+(defonce timer (r/atom (js/Date.)))
+(def time-updater (js/setInterval
+                   #(reset! timer (js/Date.)) 1000))
 (declare clock)
 
 (defn on-mouse-down [drag-element]
@@ -27,11 +28,15 @@
           (d/log (str "starting to drag word: " (-> drag-element .-target .-innerHTML)))
           (fn [evt]
             (if false (d/log (str "drag-in-progress: " (.-clientX evt) (.-clientY evt))))))
+
+        ;; not sure what drag-end-atom is for here.
         drag-end-atom (atom nil)
+
         drag-end
         (fn [evt]
           (do
-            (d/log (str "done dragging.. " (.-clientX evt) ", " (.-clientY evt)))
+            (d/log (str "done dragging element;"
+                        (.-clientX evt) ", " (.-clientY evt)))
             (events/unlisten js/window EventType.MOUSEMOVE drag-move)
             (events/unlisten js/window EventType.MOUSEUP @drag-end-atom)))]
     (reset! drag-end-atom drag-end)
