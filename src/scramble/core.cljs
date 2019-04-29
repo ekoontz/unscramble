@@ -8,13 +8,17 @@
 (defn tokenize [sentence]
   (clojure.string/split sentence #"[ ]+"))
 
-(def original-dragme-text "hello")
-(defonce dragme-content original-dragme-text)
-
-(defonce dragme-style (r/atom {"left" "0"
-                               "top" "0"}))
-
 (defonce sentence (r/atom "Io ho dato il libro interessante a Paola."))
+
+(defonce dragme-contents (shuffle (tokenize @sentence)))
+
+(defonce dragme-styles
+  (vec
+   (map (fn [index]
+          (r/atom {"left" (str (* index 200) "px")
+                   "top" "0"}))
+        (range 0 (count dragme-contents)))))
+
 
 ;; the sentence tokens in order.
 (defonce tokens (r/atom (tokenize @sentence)))
@@ -104,48 +108,55 @@
             (range (count (tokenize @sentence)))))]))
 
 (def y-offset 0)
-(defn update-dragme [opacity x-position y-position]
+(defn update-dragme [index opacity x-position y-position]
   (let [y-position (+ y-position y-offset)])
-  (reset! dragme-style
+  (reset! (nth dragme-styles index)
           {"opacity" opacity
            "left" (str x-position "px")
            "top" (str y-position "px")}))
 
-(defn dragme-on-down [drag-element]
-  (let [drag-move (fn [evt]
-                     (update-dragme 0.5 (.-clientX evt) (.-clientY evt)))
-        drag-end-atom (atom nil)
-        drag-end (fn [evt]
-                   (d/log (str "done dragging element:")
-                          (.-clientX evt) ", " (.-clientY evt))
-                   (update-dragme 1.0 (.-clientX evt) (.-clientY evt))
-                   (events/unlisten js/window EventType.MOUSEMOVE drag-move)
-                   (events/unlisten js/window EventType.MOUSEUP @drag-end-atom))]
-    (reset! drag-end-atom drag-end)
-    (events/listen js/window EventType.MOUSEMOVE drag-move)
-    (events/listen js/window EventType.MOUSEUP drag-end)))
+(defn dragme-on-down [index]
+  (fn [drag-element]
+   (let [drag-move (fn [evt]
+                     (update-dragme index 0.5 (.-clientX evt) (.-clientY evt)))
+         drag-end-atom (atom nil)
+         drag-end (fn [evt]
+                    (d/log (str "done dragging element:")
+                           (.-clientX evt) ", " (.-clientY evt))
+                    (update-dragme index 1.0 (.-clientX evt) (.-clientY evt))
+                    (events/unlisten js/window EventType.MOUSEMOVE drag-move)
+                    (events/unlisten js/window EventType.MOUSEUP @drag-end-atom))]
+     (reset! drag-end-atom drag-end)
+     (events/listen js/window EventType.MOUSEMOVE drag-move)
+     (events/listen js/window EventType.MOUSEUP drag-end))))
 
 (defn show-dragme []
-  [:div#dragme {:style @dragme-style
-                :on-mouse-down dragme-on-down}
-   dragme-content])
+  [:div.dragcontainer
+   (doall
+    (map (fn [index]
+           [:div.dragme {:key (str "dragme-" index)
+                         :style @(nth dragme-styles index)
+                         :on-mouse-down (dragme-on-down index)}
+            (nth dragme-contents index)])
+         (range 0 (count dragme-contents))))
+
+   [:div {:class "row blanks"}
+    [blank-words]]
+   [clock]])
 
 (defn scramble-layout []
   [:div
    [show-dragme]
-   [greeting "Sentence Scramble!"]
-   [sentence-input]
-   [:div {:class "row"}
-     [unscrambled-words]]
-   [:div {:class "row"}
-     [scrambled-words]]
-   [:div {:class "row blanks"}
-     [blank-words]]
-   [clock]])
+   [:div.controls
+     [greeting "Sentence Scramble Controls"]
+     [sentence-input]
+     [:div {:class "row"}
+       [unscrambled-words]]]])
+
 
 (defn clock []
   (let [time-str (-> @timer .toTimeString (clojure.string/split " ") first)]
-    [:div.example-clock
+    [:div.clock
      time-str]))
 
 (defn ^:export run []

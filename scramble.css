@@ -4,7 +4,7 @@ div, h1, input {
     color: #777;
 }
 
-.example-clock {
+.clock {
     font-size: 24px;
     font-weight: bold;
     float:right;
@@ -13,6 +13,10 @@ div, h1, input {
     border:0px dashed blue;
     line-height: 1.2em;
     font-family: HelveticaNeue-UltraLight, Helvetica;
+    position:absolute;
+    right:0;
+    bottom:0;
+    
 }
 
 @media (max-width: 768px) {
@@ -69,6 +73,11 @@ div.row {
     margin-bottom:1em;
 }    
 
+div.blanks {
+    position:absolute;
+    bottom: 1em;
+}
+
 div.blank {
     background:#eee;
     margin:0.25em;
@@ -76,8 +85,19 @@ div.blank {
     padding:0.25em;
 }
 
-div#dragme {
-     font-size:24px;
+div.dragcontainer {
+    float:left;
+    top:1em;
+    width:95%;
+    margin-left:2.5%;
+    border:1px dashed blue;
+    height:40%;
+    overflow:hidden;
+    position:absolute;
+}
+
+div.dragme {
+    font-size:24px;
     float:left;
     width:auto;
     padding:0.25em;
@@ -91,6 +111,15 @@ div#dragme {
     background:#DC143C;
     border:3px solid #BDB76B;
     color: white;
-    position:relative;
+    position:absolute;
     float:left;
+}
+
+div.controls {
+    top:50%;
+    width:90%;
+    float:left;
+    min-height:10em;
+    position:absolute;
+    margin-left:2.5%;
 }
