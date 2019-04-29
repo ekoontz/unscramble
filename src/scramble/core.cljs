@@ -32,16 +32,15 @@
   (reset! sentence (-> sentence-input-element .-target .-value))
   (set-tokens @sentence))
 
-(defn drag-move-fn [drag-element]
-  (d/log (str "drag-move-fn word: " (-> drag-element .-target .-innerHTML)))
-  (fn [evt]
-    (on-drag (.-clientX evt) (.-clientY evt))))
-
 (defn on-mouse-down [drag-element]
-  (let [drag-move (drag-move-fn drag-element)
+  (let [drag-move
+        (do
+          (d/log (str "starting to drag word: " (-> drag-element .-target .-innerHTML)))
+          (fn [evt]
+            (on-drag (.-clientX evt) (.-clientY evt))))
         drag-end-atom (atom nil)
         on-start (fn []
-                   (d/log (str "dragging has started!")))
+                   (d/log (str "dragging has started for: " (-> drag-element .-target .-innerHTML))))
         on-end (fn []
                  (d/log (str "dragging is over!")))
         drag-end
