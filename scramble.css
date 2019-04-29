@@ -16,16 +16,15 @@ div, h1, input {
     position:absolute;
     right:0;
     bottom:0;
-    
 }
 
 @media (max-width: 768px) {
-    .example-clock {
+    .clock {
         font-size: 64px;
     }
 }
 
-.example-clock {
+.clock {
     width:100%;
     color: #112;
     float:right;
@@ -76,6 +75,7 @@ div.row {
 div.blanks {
     position:absolute;
     bottom: 1em;
+    z-index:0;
 }
 
 div.blank {
@@ -87,7 +87,7 @@ div.blank {
 
 div.dragcontainer {
     float:left;
-    top:1em;
+    top:4em;
     width:95%;
     margin-left:2.5%;
     border:1px dashed blue;
@@ -97,6 +97,7 @@ div.dragcontainer {
 }
 
 div.dragme {
+    z-index:5;
     font-size:24px;
     float:left;
     width:auto;

@@ -23,9 +23,6 @@
 ;; the sentence tokens in order.
 (defonce tokens (r/atom (tokenize @sentence)))
 
-(defn greeting [message]
-  [:h1 message])
-
 (defonce timer (r/atom (js/Date.)))
 (def time-updater (js/setInterval
                    #(reset! timer (js/Date.)) 1000))
@@ -68,23 +65,7 @@
                                            (r/atom {"left" (str (* index 115) "px")
                                                     "top" "0"}))
                                         (range 0 (count @dragme-contents))))))}]])
-(declare scrambled-word)
 (declare unscrambled-word)
-
-(defn scrambled-words []
-  [:div#scrambled
-   (doall
-     (map (fn [index]
-             (scrambled-word index))
-          (shuffle (range (count (tokenize @sentence))))))])
-
-(defn scrambled-word [index]
-  [:div {:draggable true
-         :class "word scrambled"
-         :on-mouse-down on-mouse-down
-         :id (str "word-" index)
-         :key (str "word-" index)}
-   (nth @tokens index)])
 
 (defn unscrambled-words []
   [:div#unscrambled
@@ -152,9 +133,10 @@
 
 (defn scramble-layout []
   [:div
+   [:h1 "Sentence Scramble"]
    [show-dragme]
    [:div.controls
-     [greeting "Sentence Scramble Controls"]
+     [:h1 "Controls"]
      [sentence-input]
      [:div {:class "row"}
        [unscrambled-words]]]])
