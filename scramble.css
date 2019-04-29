@@ -75,3 +75,20 @@ div.blank {
     min-height:2em;
     padding:0.25em;
 }
+
+div#dragme {
+     font-size:24px;
+    float:left;
+    width:auto;
+    padding:0.25em;
+    padding-left:0.5em;
+    padding-right:0.5em;
+    margin:0.5em;
+    font-weight:bold;
+    -moz-border-radius:15px;
+    -webkit-border-radius:15px;
+    border-radius:15px;
+    background:#DC143C;
+    border:3px solid #BDB76B;
+    color: white;
+}

@@ -9,6 +9,8 @@
   (clojure.string/split sentence #"[ ]+"))
 
 
+(defonce dragme (r/atom "hello"))
+
 (defonce sentence (r/atom "Io ho dato il libro interessante a Paola."))
 
 ;; the sentence tokens in order.
@@ -98,8 +100,40 @@
                 " "])
             (range (count (tokenize @sentence)))))]))
 
+(defn dragme-on-down [drag-element]
+  (d/log (str "got here"))
+  (let [drag-move
+        (do
+          (d/log (str "starting to drag the 'dragme': " (-> drag-element .-target .-innerHTML)))
+          (fn [evt]
+            (if false (d/log (str "dragme-on-down is in-progress: " (.-clientX evt) (.-clientY evt))))))
+
+        ;; not sure what drag-end-atom is for here.
+        drag-end-atom (atom nil)
+
+        drag-end
+        (fn [evt]
+          (do
+            (d/log (str "done dragging element:"
+                        (.-clientX evt) ", " (.-clientY evt)))
+            (events/unlisten js/window EventType.MOUSEMOVE drag-move)
+            (events/unlisten js/window EventType.MOUSEUP @drag-end-atom)))]
+    (reset! drag-end-atom drag-end)
+    (events/listen js/window EventType.MOUSEMOVE drag-move)
+    (events/listen js/window EventType.MOUSEUP drag-end)))
+
+(defn show-dragme []
+  [:div {:style {"float" "right"
+                 "width" "100%"
+                 "border" "1px dashed blue"}}
+    [:div#dragme
+     {:draggable true
+      :on-mouse-down dragme-on-down}
+     @dragme]])
+
 (defn scramble-layout []
   [:div
+   [show-dragme]
    [greeting "Sentence Scramble!"]
    [sentence-input]
    [:div {:class "row"}
