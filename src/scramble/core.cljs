@@ -40,14 +40,12 @@
             (on-drag (.-clientX evt) (.-clientY evt))))
         drag-end-atom (atom nil)
         on-start (fn []
-                   (d/log (str "dragging has started for: " (-> drag-element .-target .-innerHTML))))
-        on-end (fn []
-                 (d/log (str "dragging is over!")))
-        drag-end
+                   (d/log (str "dragging has started for: " (-> drag-element .-target .-innerHTML))))       drag-end
         (fn [evt]
-          (events/unlisten js/window EventType.MOUSEMOVE drag-move)
-          (events/unlisten js/window EventType.MOUSEUP @drag-end-atom)
-          (on-end))]
+          (do
+            (d/log (str "done dragging.. " (.-clientX evt) ", " (.-clientY evt)))
+            (events/unlisten js/window EventType.MOUSEMOVE drag-move)
+            (events/unlisten js/window EventType.MOUSEUP @drag-end-atom)))]
     (on-start)
     (reset! drag-end-atom drag-end)
     (events/listen js/window EventType.MOUSEMOVE drag-move)
