@@ -59,13 +59,14 @@
             :value @sentence
             :on-change set-sentence}]])
 
+(declare scrambled-word)
 (declare sentence-word)
 
 (defn scrambled-words []
   [:div#scrambled
    (doall
      (map (fn [index]
-             (sentence-word index))
+             (scrambled-word index))
           (shuffle (range (count (tokenize @sentence))))))])
 
 (defn unscrambled-words []
@@ -75,19 +76,44 @@
              (sentence-word index))
           (range (count (tokenize @sentence)))))])
 
+(defn blank-words []
+  (let [percent (/ 100.0 (* 1.25 (count (tokenize @sentence))))]
+    [:div#blank
+     (doall
+       (map (fn [index]
+              [:div {:draggable true
+                     :class "blank word"
+                     :style {"width" (str percent "%")}
+                     :id (str "sentence-blank-" index)
+                     :key (str "sentence-blank-" index)}
+                " "])
+            (range (count (tokenize @sentence)))))]))
+
+(defn scrambled-word [index]
+  [:div {:draggable true
+         :class "word scrambled"
+         :on-mouse-down on-mouse-down
+         :id (str "word-" index)
+         :key (str "word-" index)}
+   (nth @tokens index)])
+
 (defn sentence-word [index]
-  [:div.word {:draggable true
-              :on-mouse-down on-mouse-down
-              :id (str "word-" index)
-              :key (str "word-" index)}
+  [:div {:draggable true
+         :class "word in-order"
+         :id (str "sentence-word-" index)
+         :key (str "sentence-word-" index)}
    (nth @tokens index)])
 
 (defn scramble-layout []
   [:div
    [greeting "Sentence Scramble!"]
    [sentence-input]
-   [unscrambled-words]
-   [scrambled-words]
+   [:div {:class "row"}
+     [unscrambled-words]]
+   [:div {:class "row"}
+     [scrambled-words]]
+   [:div {:class "row blanks"}
+     [blank-words]]
    [clock]])
 
 (defn clock []
