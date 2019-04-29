@@ -9,13 +9,10 @@
   (clojure.string/split sentence #"[ ]+"))
 
 (def original-dragme-text "hello")
-(defonce dragme-content (r/atom original-dragme-text))
+(defonce dragme-content original-dragme-text)
 
-;;(defonce dragme-style (r/atom {"left" ()}))
-
-
-(defonce dragme
-  (r/atom [:div#dragme {:style {}} @dragme-content]))
+(defonce dragme-style (r/atom {"left" "0"
+                               "top" "0"}))
 
 (defonce sentence (r/atom "Io ho dato il libro interessante a Paola."))
 
@@ -107,16 +104,10 @@
             (range (count (tokenize @sentence)))))]))
 
 (defn update-dragme [new-text x-position y-position]
-  (d/log (str "UPDATING DRAGME..."))
-  (reset! dragme-content new-text)
-  (let [[element attributes old-text] @dragme]
-    (reset! dragme
-            [element (merge attributes
-                            {:style (merge (:style attributes)
-                                           {"left" (str x-position "px")
-                                            "top" (str y-position "px")})})
-             @dragme-content])
-    (d/log (str "DONE UPDATING DRAGME!" @dragme))))
+  (d/log (str "UPDATING DRAGME TO: " x-position ", " y-position))
+  (reset! dragme-style
+          {"left" (str x-position "px")
+           "top" (str y-position "px")}))
 
 (defn dragme-on-down [drag-element]
   (d/log (str "got here"))
@@ -124,8 +115,8 @@
         (do
           (d/log (str "starting to drag the 'dragme': " (-> drag-element .-target .-innerHTML)))
           (fn [evt]
-             (reset! dragme-content (str "to: " (.-clientX evt) ", " (.-clientY evt)))
-             (if false (d/log (str "dragme-on-down is in-progress: " (.-clientX evt) (.-clientY evt))))))
+             (update-dragme original-dragme-text (.-clientX evt) (.-clientY evt))
+             (if true (d/log (str "dragme-on-down is in-progress: " (.-clientX evt) (.-clientY evt))))))
 
         ;; not sure what drag-end-atom is for here.
         drag-end-atom (atom nil)
@@ -142,14 +133,10 @@
     (events/listen js/window EventType.MOUSEMOVE drag-move)
     (events/listen js/window EventType.MOUSEUP drag-end)))
 
-
 (defn show-dragme []
-  (reset! dragme
-          (let [[element attributes old-text] @dragme]
-            [element (merge attributes
-                            {:on-mouse-down dragme-on-down})
-                     @dragme-content]))
-  @dragme)
+  [:div#dragme {:style @dragme-style
+                :on-mouse-down dragme-on-down}
+   dragme-content])
 
 (defn scramble-layout []
   [:div
