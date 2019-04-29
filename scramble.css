@@ -40,16 +40,38 @@ div.word {
     padding-left:0.5em;
     padding-right:0.5em;
     margin:0.5em;
-    background:#FFEFD5;
-    border:3px solid #BDB76B;
     font-weight:bold;
     -moz-border-radius:15px;
     -webkit-border-radius:15px;
     border-radius:15px;
 }
 
+div.scrambled {
+    background:#DC143C;
+    border:3px solid #BDB76B;
+    color: white;
+}
+
+div.in-order {
+    background:#FFEFD5;
+    border:3px solid #BDB76B;
+}
 
 .sentence-input, .sentence-input input {
-     font-size:24px;
+    font-size:24px;
     line-height: 1.5em;
  }
+
+div.row {
+    width:100%;
+    float:left;
+    margin-top:1em;
+    margin-bottom:1em;
+}    
+
+div.blank {
+    background:#eee;
+    margin:0.125em;
+    min-height:1em;
+    padding:0.25em;
+}
