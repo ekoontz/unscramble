@@ -26,10 +26,9 @@
          (set-scrambled-styles (rest tokens) (* 0.98 (+ offset em-per-word))))))))
 
 (defn set-blank-styles [tokens]
-  (if (not (empty? tokens))
-    (cons
-      (r/atom {})
-      (set-blank-styles (rest tokens)))))
+  (map (fn [token]
+         (r/atom {"token" token}))
+       tokens))
 
 (declare set-blank-styles)
 (declare set-scrambled-styles)
@@ -39,7 +38,6 @@
 
 (defonce blank-styles
   (r/atom (set-blank-styles @word-contents)))
-
 
 ;; the sentence tokens in order.
 (defonce tokens (r/atom (tokenize @sentence)))
@@ -51,14 +49,9 @@
 
 (defn on-mouse-down [drag-element]
   (let [drag-move
-        (do
-          (d/log (str "starting to drag word:.. " (-> drag-element .-target .-innerHTML)))
-          (fn [evt]
-            (if false (d/log (str "drag-in-progress: " (.-clientX evt) (.-clientY evt))))))
-
-        ;; not sure what drag-end-atom is for here.
+        (fn [evt]
+          (if false (d/log (str "drag-in-progress: " (.-clientX evt) (.-clientY evt)))))
         drag-end-atom (atom nil)
-
         drag-end
         (fn [evt]
           (do
@@ -104,15 +97,18 @@
   (let [percent (/ 100.0 (* 1.25 (count (tokenize @sentence))))]
     [:div#blank
      (doall
-       (map (fn [index]
-              [:div {:draggable true
-                     :class "blank word"
-                     :style (merge @(nth @blank-styles index)
-                                   {"width" (str percent "%")})
-                     :id (str "sentence-blank-" index)
-                     :key (str "sentence-blank-" index)}
-                " "])
-            (range (count (tokenize @sentence)))))]))
+      (map (fn [index]
+             (let [style (merge @(nth @blank-styles index)
+                                {"width" (str percent "%")})]
+               (reset! (nth @blank-styles index)
+                       style)
+               [:div {:draggable true
+                      :class "blank word"
+                      :style style
+                      :id (str "sentence-blank-" index)
+                      :key (str "sentence-blank-" index)}
+                " "]))
+           (range (count (tokenize @sentence)))))]))
 
 (defn update-word [index opacity x-position y-position]
   ;; For some reason, the mouse cursor is offset by 90 and 100 pixels,
@@ -125,18 +121,37 @@
             "left" (str x-position "px")
             "top" (str y-position "px")})))
 
+(defn dragged-above-which [x y]
+  (first
+   (filter #(not (nil? %))
+           (map (fn [style-ref]
+                  (let [x-blank (get @style-ref "left")
+                        y-blank (get @style-ref "top")]
+                    (d/log (str "style-ref: " @style-ref))
+                    (when (= (get @style-ref "token") "libro")
+                      (d/log (str "FOUND!!"))
+                      (d/log (str "x-blank: " @style-ref))
+                      (d/log (str "  token: " (get @style-ref "token")))
+                      style-ref)))
+                @blank-styles))))
+
 (defn drag-word [index x y]
   (update-word index 0.5 x y)
   ;; collision check: flash the blank over which the word is.
-  (reset! (nth @blank-styles index)
-          {"background" "blue"}))
+
+  (if-let [over-blank (dragged-above-which x y)]
+    (reset! over-blank
+            (merge @over-blank {"background" "blue"}))))
 
 (defn drop-word [index x y]
   (update-word index 1.0 x y)
   ;; collision check: flash the blank over which the word is.
-  (reset! (nth @blank-styles index)
-          (dissoc @(nth @blank-styles index)
-                  "background")))
+  (doall
+   (map (fn [style-ref]
+          (reset! style-ref
+                  (dissoc @style-ref
+                         "background")))
+        @blank-styles)))
 
 (defn draggable-action [index]
   (fn [drag-element]
