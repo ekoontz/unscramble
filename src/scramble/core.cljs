@@ -25,8 +25,21 @@
                   "top" "0"})
          (set-scrambled-styles (rest tokens) (* 0.98 (+ offset em-per-word))))))))
 
+(defn set-blank-styles [tokens]
+  (if (not (empty? tokens))
+    (cons
+      (r/atom {})
+      (set-blank-styles (rest tokens)))))
+
+(declare set-blank-styles)
+(declare set-scrambled-styles)
+
 (defonce word-styles
   (r/atom (set-scrambled-styles @word-contents)))
+
+(defonce blank-styles
+  (r/atom (set-blank-styles @word-contents)))
+
 
 ;; the sentence tokens in order.
 (defonce tokens (r/atom (tokenize @sentence)))
@@ -68,7 +81,8 @@
                          (let [tokenized (tokenize (clojure.string/trim @sentence))]
                            (reset! tokens tokenized)
                            (reset! word-contents (shuffle tokenized))
-                           (reset! word-styles (set-scrambled-styles @word-contents))))}]])
+                           (reset! word-styles (set-scrambled-styles @word-contents))
+                           (reset! blank-styles (set-blank-styles @word-contents))))}]])
 
 (declare unscrambled-word)
 
@@ -93,7 +107,8 @@
        (map (fn [index]
               [:div {:draggable true
                      :class "blank word"
-                     :style {"width" (str percent "%")}
+                     :style (merge @(nth @blank-styles index)
+                                   {"width" (str percent "%")})
                      :id (str "sentence-blank-" index)
                      :key (str "sentence-blank-" index)}
                 " "])
@@ -101,7 +116,8 @@
 
 (defn update-word [index opacity x-position y-position]
   ;; For some reason, the mouse cursor is offset by 90 and 100 pixels,
-  ;; in the x and y dimensions, respectively.
+  ;; in the x and y dimensions, respectively, so this corrects for
+  ;; that apparent skew.
   (let [x-position (- x-position 90)
         y-position (- y-position 100)]
    (reset! (nth @word-styles index)
@@ -110,10 +126,17 @@
             "top" (str y-position "px")})))
 
 (defn drag-word [index x y]
-  (update-word index 0.5 x y))
+  (update-word index 0.5 x y)
+  ;; collision check: flash the blank over which the word is.
+  (reset! (nth @blank-styles index)
+          {"background" "blue"}))
 
 (defn drop-word [index x y]
-  (update-word index 1.0 x y))
+  (update-word index 1.0 x y)
+  ;; collision check: flash the blank over which the word is.
+  (reset! (nth @blank-styles index)
+          (dissoc @(nth @blank-styles index)
+                  "background")))
 
 (defn draggable-action [index]
   (fn [drag-element]
