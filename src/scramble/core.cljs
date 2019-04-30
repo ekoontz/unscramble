@@ -124,16 +124,23 @@
 (defn dragged-above-which [x y]
   (first
    (filter #(not (nil? %))
-           (map (fn [style-ref]
-                  (let [x-blank (get @style-ref "left")
-                        y-blank (get @style-ref "top")]
-                    (d/log (str "style-ref: " @style-ref))
+           (map (fn [index]
+                  (let [style-ref (nth @blank-styles index)]
+                    (d/log (str "ELEMENT:"
+                                (.getElementById js/document
+                                                 (str "sentence-blank-" index))))
+                    (d/log (str "LEFT:"
+                                (.getPropertyValue
+                                  (.getComputedStyle js/window
+                                        (.getElementById js/document
+                                                         (str "sentence-blank-" index)))
+                                  "left")))
                     (when (= (get @style-ref "token") "libro")
                       (d/log (str "FOUND!!"))
                       (d/log (str "x-blank: " @style-ref))
                       (d/log (str "  token: " (get @style-ref "token")))
                       style-ref)))
-                @blank-styles))))
+                (range 0 (count @blank-styles))))))
 
 (defn drag-word [index x y]
   (update-word index 0.5 x y)
