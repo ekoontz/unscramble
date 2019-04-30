@@ -99,23 +99,31 @@
                 " "])
             (range (count (tokenize @sentence)))))]))
 
-(def y-offset 0)
 (defn update-word [index opacity x-position y-position]
-  (let [y-position (+ y-position y-offset)])
-  (reset! (nth @word-styles index)
-          {"opacity" opacity
-           "left" (str x-position "px")
-           "top" (str y-position "px")}))
+  ;; For some reason, the mouse cursor is offset by 90 and 100 pixels,
+  ;; in the x and y dimensions, respectively.
+  (let [x-position (- x-position 90)
+        y-position (- y-position 100)]
+   (reset! (nth @word-styles index)
+           {"opacity" opacity
+            "left" (str x-position "px")
+            "top" (str y-position "px")})))
+
+(defn drag-word [index x y]
+  (update-word index 0.5 x y))
+
+(defn drop-word [index x y]
+  (update-word index 1.0 x y))
 
 (defn draggable-action [index]
   (fn [drag-element]
    (let [drag-move (fn [evt]
-                     (update-word index 0.5 (.-clientX evt) (.-clientY evt)))
+                     (drag-word index (.-clientX evt) (.-clientY evt)))
          drag-end-atom (atom nil)
          drag-end (fn [evt]
                     (d/log (str "done dragging element:")
                            (.-clientX evt) ", " (.-clientY evt))
-                    (update-word index 1.0 (.-clientX evt) (.-clientY evt))
+                    (drop-word index (.-clientX evt) (.-clientY evt))
                     (events/unlisten js/window EventType.MOUSEMOVE drag-move)
                     (events/unlisten js/window EventType.MOUSEUP @drag-end-atom))]
      (reset! drag-end-atom drag-end)
