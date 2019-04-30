@@ -190,6 +190,7 @@
       (if (= (nth @word-contents index)
              (nth @tokens over-blank-index))
         (do
+          ;; TODO: set draggable=false for this correctly-dragged word.
           (d/log (str "YOU GOT IT RIGHT!!"))
           (reset! points (+ @points 1))
           (reset! remaining (- @remaining 1))
