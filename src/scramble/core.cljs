@@ -28,7 +28,7 @@
 (defn set-blank-styles [tokens & [offset]]
   (let [offset (or offset 0.0)]
     (if (not (empty? tokens))
-      (let [em-per-word (Math/max 1.0 3.0)]
+      (let [em-per-word 8.0]
         (if debug (d/log (str "offset: " offset)))
         (cons
          (r/atom {"left" (str offset "em")
@@ -104,7 +104,8 @@
      (doall
       (map (fn [index]
              (let [style (merge @(nth @blank-styles index)
-                                {"width" (str percent "%")})]
+                                {"left" (str (* index 5) "em")
+                                 "width" "3em"})]
                (reset! (nth @blank-styles index)
                        style)
                [:div {:draggable true
@@ -119,7 +120,7 @@
   (- (/ pixels 25.0) 2.4))
 
 (defn vertical-px-to-em [pixels]
-  (- (/ pixels 25.0) 3.75))
+  (- (/ pixels 25.0) 6.2))
 
 (defn update-word [index opacity x-position y-position]
   (let [x-position (horizontal-px-to-em x-position)
@@ -152,14 +153,19 @@
                        (when (and (>= dragged-left target-left)
                                   (or (nil? next-style-ref)
                                       (< dragged-left next-target-left)))
-;;                         (d/log (str "   matched:" index))
+                         (d/log (str "[" target-left " <= " dragged-left " < " next-target-left "]"))
+                         (d/log (str "   matched:" index))
                          style-ref)))
                    (range 0 (count @blank-styles)))))))
 
 (defn drag-word [index dragged-style x y]
   (update-word index 0.5 x y)
   ;; collision check: flash the blank over which the word is.
-
+  (doall (map (fn [style-ref]
+               (reset! style-ref
+                       (dissoc @style-ref
+                               "background")))
+              @blank-styles))
   (if-let [over-blank (dragged-above-which dragged-style)]
     (reset! over-blank
             (merge @over-blank {"background" "blue"}))))
@@ -211,9 +217,7 @@
    [shuffled-words]
    [:div.controls
      [:h1 "Controls"]
-     [sentence-input]
-     [:div {:class "row"}
-       [unscrambled-words]]]])
+     [sentence-input]]])
 
 
 (defn clock []

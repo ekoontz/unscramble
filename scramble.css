@@ -1,3 +1,7 @@
+body {
+    font-weight:bold;
+    font-size:24px;
+}
 
 div, h1, input {
     font-family: HelveticaNeue, Helvetica;
@@ -10,7 +14,6 @@ div, h1, input {
     float:right;
     text-align:right;
     width:auto;
-    border:0px dashed blue;
     line-height: 1.2em;
     font-family: HelveticaNeue-UltraLight, Helvetica;
     position:absolute;
@@ -45,6 +48,7 @@ div.word {
     -moz-border-radius:15px;
     -webkit-border-radius:15px;
     border-radius:15px;
+    position:absolute;
 }
 
 div.scrambled {
@@ -64,13 +68,11 @@ div.in-order {
  }
 
 div.row {
-    font-weight:bold;
-    font-size:24px;
-    border:1px dashed green;
     width:100%;
     float:left;
     margin-top:1em;
     margin-bottom:1em;
+    min-height:1.25em;
     position:absolute;
 }    
 
@@ -83,16 +85,6 @@ div.blank {
     min-height:0.25em;
 }
 
-div.dragcontainer {
-    float:left;
-    top:4em;
-    width:95%;
-    margin-left:2.5%;
-    border:1px dashed blue;
-    height:40%;
-    overflow:hidden;
-    position:absolute;
-}
 
 div.shuffled {
     -webkit-user-select:none;
@@ -106,15 +98,29 @@ div.shuffled {
     background:#DC143C;
     border:3px solid #BDB76B;
     color: white;
-    position:absolute;
     float:left;
 }
 
+div.dragcontainer {
+    border:1px solid blue;
+    float:left;
+    top:4em;
+    width:95%;
+    margin-left:1.5%;
+    height:60%;
+    overflow:hidden;
+    position:absolute;
+    -moz-border-radius:15px;
+    -webkit-border-radius:15px;
+    border-radius:15px;
+    border:3px solid #BDB76B;
+}
+
 div.controls {
-    top:50%;
+    bottom:1em;
     width:90%;
     float:left;
-    min-height:10em;
-    position:absolute;
+    min-height:5em;
+    position:fixed;
     margin-left:2.5%;
 }
