@@ -107,7 +107,7 @@
            "left" (str x-position "px")
            "top" (str y-position "px")}))
 
-(defn dragme-on-down [index]
+(defn draggable-action [index]
   (fn [drag-element]
    (let [drag-move (fn [evt]
                      (update-dragme index 0.5 (.-clientX evt) (.-clientY evt)))
@@ -122,13 +122,13 @@
      (events/listen js/window EventType.MOUSEMOVE drag-move)
      (events/listen js/window EventType.MOUSEUP drag-end))))
 
-(defn show-dragme []
+(defn shuffled-words []
   [:div.dragcontainer
    (doall
     (map (fn [index]
            [:div.dragme {:key (str "dragme-" index)
                          :style @(nth @dragme-styles index)
-                         :on-mouse-down (dragme-on-down index)}
+                         :on-mouse-down (draggable-action index)}
             (nth @dragme-contents index)])
          (range 0 (count @dragme-contents))))
 
@@ -139,7 +139,7 @@
 (defn scramble-layout []
   [:div
    [:h1 "Sentence Scramble"]
-   [show-dragme]
+   [shuffled-words]
    [:div.controls
      [:h1 "Controls"]
      [sentence-input]
