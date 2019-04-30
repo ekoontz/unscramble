@@ -12,6 +12,9 @@
 
 (defonce word-contents (r/atom (shuffle (tokenize @sentence))))
 
+(defonce points (r/atom 0))
+(defonce remaining (r/atom (count @word-contents)))
+
 (defonce debug false)
 
 (defn set-scrambled-styles [tokens & [offset]]
@@ -134,9 +137,8 @@
   (let [dragged-left (-> (get dragged-style "left")
                         (clojure.string/replace "em" "")
                         js/parseFloat)]
-    (d/log (str "dragged-left: " dragged-left))
     (first
-      (filter #(not (nil? %))
+     (filter #(not (nil? %))
               (map (fn [index]
                      (let [style-ref (nth @blank-styles index)
                            next-style-ref (if (< (+ 1 index) (count @blank-styles))
@@ -148,37 +150,60 @@
                                               (-> (get @next-style-ref "left")
                                                   (clojure.string/replace "em" "")
                                                   js/parseFloat))]
-                       ;;                    (d/log (str "checking:" index))
-                       ;;                    (d/log (str "[" target-left " <= " dragged-left " < " next-target-left "]"))
                        (when (and (>= dragged-left target-left)
                                   (or (nil? next-style-ref)
-                                      (< dragged-left next-target-left)))
-                         (d/log (str "[" target-left " <= " dragged-left " < " next-target-left "]"))
-                         (d/log (str "   matched:" index))
-                         style-ref)))
+                                      (< dragged-left next-target-left))
+                                  (not (= "green" (get @style-ref "background"))))
+
+                         index)))
                    (range 0 (count @blank-styles)))))))
+
+(defn reset-blanks []
+  (doall
+   (map (fn [style-ref]
+          (if (not (= "green" (get @style-ref "background")))
+            (reset! style-ref
+                    (dissoc @style-ref
+                           "background"))))
+        @blank-styles)))
 
 (defn drag-word [index dragged-style x y]
   (update-word index 0.5 x y)
+  ;; initialize all blanks to having no background.
+  (reset-blanks)
   ;; collision check: flash the blank over which the word is.
-  (doall (map (fn [style-ref]
-               (reset! style-ref
-                       (dissoc @style-ref
-                               "background")))
-              @blank-styles))
-  (if-let [over-blank (dragged-above-which dragged-style)]
-    (reset! over-blank
-            (merge @over-blank {"background" "blue"}))))
+  (if-let [over-blank-index (dragged-above-which dragged-style)]
+    (let [over-blank (nth @blank-styles over-blank-index)]
+      (reset! over-blank
+              (merge @over-blank {"background" "blue"})))))
 
-(defn drop-word [index x y]
+(defn drop-word [index dragged-style-ref x y]
   (update-word index 1.0 x y)
+  (reset-blanks)
   ;; collision check: flash the blank over which the word is.
-  (doall
-   (map (fn [style-ref]
-          (reset! style-ref
-                  (dissoc @style-ref
-                         "background")))
-        @blank-styles)))
+  (if-let [over-blank-index (dragged-above-which @dragged-style-ref)]
+    (let [over-blank (nth @blank-styles over-blank-index)]
+      (d/log (str "SCRAMBLED INDEX: " index "; CHOSEN POSITION: " over-blank-index))
+      (d/log (str "CORRECT WORD AT POSITION:" (nth @tokens over-blank-index)))
+      (if (= (nth @word-contents index)
+             (nth @tokens over-blank-index))
+        (do
+          (d/log (str "YOU GOT IT RIGHT!!"))
+          (reset! points (+ @points 1))
+          (reset! remaining (- @remaining 1))
+          (reset! over-blank
+                  (merge @over-blank {"background" "green"}))
+          (reset! dragged-style-ref
+                  (merge @dragged-style-ref
+                         {"top" "7em"
+                          "background" "green"
+                          "min-height" "1em"})))
+        (do
+          (d/log (str "SORRY THAT IS WRONG."))
+          (reset! points (- @points 1))
+          (reset! dragged-style-ref
+                  (merge @dragged-style-ref
+                         {"top" "0"})))))))
 
 (defn draggable-action [index]
   (fn [drag-element]
@@ -188,7 +213,7 @@
          drag-end (fn [evt]
                     (d/log (str "done dragging element:")
                            (.-clientX evt) ", " (.-clientY evt))
-                    (drop-word index (.-clientX evt) (.-clientY evt))
+                    (drop-word index (nth @word-styles index) (.-clientX evt) (.-clientY evt))
                     (events/unlisten js/window EventType.MOUSEMOVE drag-move)
                     (events/unlisten js/window EventType.MOUSEUP @drag-end-atom))]
      (reset! drag-end-atom drag-end)
@@ -215,8 +240,9 @@
   [:div
    [:h1 "Sentence Scramble"]
    [shuffled-words]
+   [:div.points "POINTS:" @points]
+   [:div.remaining "WORDS REMAINING:" @remaining]
    [:div.controls
-     [:h1 "Controls"]
      [sentence-input]]])
 
 

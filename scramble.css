@@ -124,3 +124,16 @@ div.controls {
     position:fixed;
     margin-left:2.5%;
 }
+
+div.points {
+    position:absolute;
+    top:1em;
+    right:1em;
+    float:right;
+}
+div.remaining {
+    position:absolute;
+    top:1em;
+    right:10em;
+    float:right;
+}
