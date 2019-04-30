@@ -85,7 +85,6 @@ div.blank {
     min-height:0.25em;
 }
 
-
 div.shuffled {
     -webkit-user-select:none;
     -khtml-user-select:none;
@@ -95,7 +94,7 @@ div.shuffled {
     user-select:none;
     z-index:5;
     width:auto;
-    background:#DC143C;
+    background:#FA8072;
     border:3px solid #BDB76B;
     color: white;
     float:left;

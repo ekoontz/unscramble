@@ -83,7 +83,9 @@
                            (reset! tokens tokenized)
                            (reset! word-contents (shuffle tokenized))
                            (reset! word-styles (set-scrambled-styles @word-contents))
-                           (reset! blank-styles (set-blank-styles @word-contents))))}]])
+                           (reset! blank-styles (set-blank-styles @word-contents))
+                           (reset! remaining (count @tokens))
+                           (reset! points 0)))}]])
 
 (declare unscrambled-word)
 
@@ -153,7 +155,7 @@
                        (when (and (>= dragged-left target-left)
                                   (or (nil? next-style-ref)
                                       (< dragged-left next-target-left))
-                                  (not (= "green" (get @style-ref "background"))))
+                                  (not (= "#9ACD32" (get @style-ref "background"))))
 
                          index)))
                    (range 0 (count @blank-styles)))))))
@@ -161,7 +163,7 @@
 (defn reset-blanks []
   (doall
    (map (fn [style-ref]
-          (if (not (= "green" (get @style-ref "background")))
+          (if (not (= "#9ACD32" (get @style-ref "background")))
             (reset! style-ref
                     (dissoc @style-ref
                            "background"))))
@@ -175,7 +177,7 @@
   (if-let [over-blank-index (dragged-above-which dragged-style)]
     (let [over-blank (nth @blank-styles over-blank-index)]
       (reset! over-blank
-              (merge @over-blank {"background" "blue"})))))
+              (merge @over-blank {"background" "cyan"})))))
 
 (defn drop-word [index dragged-style-ref x y]
   (update-word index 1.0 x y)
@@ -192,11 +194,11 @@
           (reset! points (+ @points 1))
           (reset! remaining (- @remaining 1))
           (reset! over-blank
-                  (merge @over-blank {"background" "green"}))
+                  (merge @over-blank {"background" "#9ACD32"}))
           (reset! dragged-style-ref
                   (merge @dragged-style-ref
                          {"top" "7em"
-                          "background" "green"
+                          "background" "#9ACD32"
                           "min-height" "1em"})))
         (do
           (d/log (str "SORRY THAT IS WRONG."))
