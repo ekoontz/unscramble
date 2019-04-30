@@ -25,10 +25,15 @@
                   "top" "0"})
          (set-scrambled-styles (rest tokens) (* 0.98 (+ offset em-per-word))))))))
 
-(defn set-blank-styles [tokens]
-  (map (fn [token]
-         (r/atom {"token" token}))
-       tokens))
+(defn set-blank-styles [tokens & [offset]]
+  (let [offset (or offset 0.0)]
+    (if (not (empty? tokens))
+      (let [em-per-word (Math/max 1.0 3.0)]
+        (if debug (d/log (str "offset: " offset)))
+        (cons
+         (r/atom {"left" (str offset "em")
+                  "top" "0"})
+         (set-blank-styles (rest tokens) (* 0.5 (+ offset em-per-word))))))))
 
 (declare set-blank-styles)
 (declare set-scrambled-styles)
@@ -94,8 +99,8 @@
    (nth @tokens index)])
 
 (defn blank-words []
-  (let [percent (/ 100.0 (* 1.25 (count (tokenize @sentence))))]
-    [:div#blank
+  (let [percent (/ 100.0 (* 1.6 (count (tokenize @sentence))))]
+    [:div#blanks {:class "row"}
      (doall
       (map (fn [index]
              (let [style (merge @(nth @blank-styles index)
@@ -110,43 +115,52 @@
                 " "]))
            (range (count (tokenize @sentence)))))]))
 
+(defn horizontal-px-to-em [pixels]
+  (- (/ pixels 25.0) 2.4))
+
+(defn vertical-px-to-em [pixels]
+  (- (/ pixels 25.0) 3.75))
+
 (defn update-word [index opacity x-position y-position]
-  ;; For some reason, the mouse cursor is offset by 90 and 100 pixels,
-  ;; in the x and y dimensions, respectively, so this corrects for
-  ;; that apparent skew.
-  (let [x-position (- x-position 90)
-        y-position (- y-position 100)]
+  (let [x-position (horizontal-px-to-em x-position)
+        y-position (vertical-px-to-em y-position)]
    (reset! (nth @word-styles index)
            {"opacity" opacity
-            "left" (str x-position "px")
-            "top" (str y-position "px")})))
+            "left" (str x-position "em")
+            "top" (str y-position "em")})))
 
-(defn dragged-above-which [x y]
-  (first
-   (filter #(not (nil? %))
-           (map (fn [index]
-                  (let [style-ref (nth @blank-styles index)]
-                    (d/log (str "ELEMENT:"
-                                (.getElementById js/document
-                                                 (str "sentence-blank-" index))))
-                    (d/log (str "LEFT:"
-                                (.getPropertyValue
-                                  (.getComputedStyle js/window
-                                        (.getElementById js/document
-                                                         (str "sentence-blank-" index)))
-                                  "left")))
-                    (when (= (get @style-ref "token") "libro")
-                      (d/log (str "FOUND!!"))
-                      (d/log (str "x-blank: " @style-ref))
-                      (d/log (str "  token: " (get @style-ref "token")))
-                      style-ref)))
-                (range 0 (count @blank-styles))))))
+(defn dragged-above-which [dragged-style]
+  (let [dragged-left (-> (get dragged-style "left")
+                        (clojure.string/replace "em" "")
+                        js/parseFloat)]
+    (d/log (str "dragged-left: " dragged-left))
+    (first
+      (filter #(not (nil? %))
+              (map (fn [index]
+                     (let [style-ref (nth @blank-styles index)
+                           next-style-ref (if (< (+ 1 index) (count @blank-styles))
+                                            (nth @blank-styles (+ 1 index)))
+                           target-left (-> (get @style-ref "left")
+                                           (clojure.string/replace "em" "")
+                                           js/parseFloat)
+                           next-target-left (if next-style-ref
+                                              (-> (get @next-style-ref "left")
+                                                  (clojure.string/replace "em" "")
+                                                  js/parseFloat))]
+                       ;;                    (d/log (str "checking:" index))
+                       ;;                    (d/log (str "[" target-left " <= " dragged-left " < " next-target-left "]"))
+                       (when (and (>= dragged-left target-left)
+                                  (or (nil? next-style-ref)
+                                      (< dragged-left next-target-left)))
+;;                         (d/log (str "   matched:" index))
+                         style-ref)))
+                   (range 0 (count @blank-styles)))))))
 
-(defn drag-word [index x y]
+(defn drag-word [index dragged-style x y]
   (update-word index 0.5 x y)
   ;; collision check: flash the blank over which the word is.
 
-  (if-let [over-blank (dragged-above-which x y)]
+  (if-let [over-blank (dragged-above-which dragged-style)]
     (reset! over-blank
             (merge @over-blank {"background" "blue"}))))
 
@@ -163,7 +177,7 @@
 (defn draggable-action [index]
   (fn [drag-element]
    (let [drag-move (fn [evt]
-                     (drag-word index (.-clientX evt) (.-clientY evt)))
+                     (drag-word index @(nth @word-styles index) (.-clientX evt) (.-clientY evt)))
          drag-end-atom (atom nil)
          drag-end (fn [evt]
                     (d/log (str "done dragging element:")
@@ -177,17 +191,18 @@
 
 (defn shuffled-words []
   [:div.dragcontainer
-   (doall
-    (map (fn [index]
-           [:div {:class "shuffled word"
-                  :key (str "word-" index)
-                  :style @(nth @word-styles index)
-                  :on-mouse-down (draggable-action index)}
-            (nth @word-contents index)])
-         (range 0 (count @word-contents))))
+   [:div.row
+    (doall
+     (map (fn [index]
+            [:div {:class "shuffled word"
+                   :draggable true
+                   :key (str "word-" index)
+                   :style @(nth @word-styles index)
+                   :on-mouse-down (draggable-action index)}
+             (nth @word-contents index)])
+          (range 0 (count @word-contents))))]
 
-   [:div {:class "row blanks"}
-    [blank-words]]
+   [blank-words]
    [clock]])
 
 (defn scramble-layout []

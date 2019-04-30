@@ -36,14 +36,12 @@ div, h1, input {
 }
 
 div.word {
-    font-size:24px;
     float:left;
     width:auto;
     padding:0.25em;
     padding-left:0.5em;
     padding-right:0.5em;
     margin:0.5em;
-    font-weight:bold;
     -moz-border-radius:15px;
     -webkit-border-radius:15px;
     border-radius:15px;
@@ -66,23 +64,23 @@ div.in-order {
  }
 
 div.row {
+    font-weight:bold;
+    font-size:24px;
+    border:1px dashed green;
     width:100%;
     float:left;
     margin-top:1em;
     margin-bottom:1em;
+    position:absolute;
 }    
 
-div.blanks {
-    position:absolute;
+div#blanks {
     bottom: 1em;
-    z-index:0;
 }
 
 div.blank {
     background:#eee;
-    margin:0.25em;
     min-height:0.25em;
-    padding:0.25em;
 }
 
 div.dragcontainer {
@@ -103,19 +101,8 @@ div.shuffled {
     -ms-user-select:none;
     -o-user-select:none;
     user-select:none;
-
     z-index:5;
-    font-size:24px;
-    float:left;
     width:auto;
-    padding:0.25em;
-    padding-left:0.5em;
-    padding-right:0.5em;
-    margin:0.5em;
-    font-weight:bold;
-    -moz-border-radius:15px;
-    -webkit-border-radius:15px;
-    border-radius:15px;
     background:#DC143C;
     border:3px solid #BDB76B;
     color: white;
