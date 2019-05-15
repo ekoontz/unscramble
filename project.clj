@@ -1,6 +1,7 @@
 (defproject scramble-reagent "0.6.0"
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/clojurescript "1.10.516"]
+                 [cljs-http "0.1.46"]
                  [reagent "0.8.1"]
                  [figwheel "0.5.18"]]
 

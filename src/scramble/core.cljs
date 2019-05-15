@@ -2,13 +2,19 @@
   (:require
    [goog.events :as events]
    [reagent.core :as r]
-   [reagent.debug :as d])
+   [reagent.debug :as d]
+   [cljs-http.client :as http]
+   [cljs.core.async :refer [<!]])
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:import [goog.events EventType]))
+
+(def verbcoach-url "http://localhost:3000/scramble")
+(def sentence-set 1)
 
 (defn tokenize [sentence]
   (clojure.string/split sentence #"[ ]+"))
 
-(defonce sentence (r/atom "Io ho dato il libro interessante a Paola."))
+(defonce sentence (r/atom "loading the sentence..."))
 
 (defonce word-contents (r/atom (shuffle (tokenize @sentence))))
 
@@ -16,6 +22,12 @@
 (defonce remaining (r/atom (count @word-contents)))
 
 (defonce debug false)
+
+(defn get-a-sentence []
+  (d/log (str "getting a scrambled sentence for sentence set: " sentence-set))
+  (go (let [response (<! (http/get (str verbcoach-url "/game/" sentence-set)
+                                   {:query-params {"modality" "get-a-sentence"}}))]
+        (d/log (str "THE RESPONSE WAS:" response)))))
 
 (defn set-scrambled-styles [tokens & [offset]]
   (let [offset (or offset 0.0)]
@@ -240,6 +252,7 @@
    [clock]])
 
 (defn scramble-layout []
+  (get-a-sentence)
   [:div
    [:h1 "Sentence Scramble"]
    [shuffled-words]
